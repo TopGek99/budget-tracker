@@ -1,14 +1,11 @@
-let db;
-// create a new db request for a "BudgetDB" database.
+let db, BudgetStore, transaction;
 const request = window.indexedDB.open("BudgetDB");
 
 request.onupgradeneeded = function (event) {
-  // create object store called "BudgetStore" and set autoIncrement to true
   db = event.target.result;
-  const BudgetStore = db.createObjectStore("BudgetStore", {
+  BudgetStore = db.createObjectStore("BudgetStore", {
     autoIncrement: true,
   });
-  BudgetStore.createIndex("records", "records");
 };
 
 request.onsuccess = function (event) {
@@ -20,25 +17,18 @@ request.onsuccess = function (event) {
 };
 
 request.onerror = function (event) {
-  // log error here
   console.error(event.target.result);
 };
 
 function saveRecord(record) {
-  // create a transaction on the pending db with readwrite access
-  const transaction = db.transaction(["BudgetStore"], "readwrite");
-  // access your pending object store
-  const BudgetStore = transaction.objectStore("BudgetStore");
-  // add record to your store with add method.
+  transaction = db.transaction(["BudgetStore"], "readwrite");
+  BudgetStore = transaction.objectStore("BudgetStore");
   BudgetStore.add(record);
 }
 
 function checkDatabase() {
-  // open a transaction on your pending db
-  const transaction = db.transaction(["BudgetStore"], "readwrite");
-  // access your pending object store
-  const BudgetStore = transaction.objectStore("BudgetStore");
-  // get all records from store and set to a variable
+  transaction = db.transaction(["BudgetStore"], "readwrite");
+  BudgetStore = transaction.objectStore("BudgetStore");
   const getAll = BudgetStore.getAll();
 
   getAll.onsuccess = function () {
@@ -53,16 +43,12 @@ function checkDatabase() {
       })
         .then((response) => response.json())
         .then(() => {
-          // if successful, open a transaction on your pending db
-          const transaction = db.transaction(["BudgetStore"], "readwrite");
-          // access your pending object store
-          const BudgetStore = transaction.objectStore("BudgetStore");
-          // clear all items in your store
+          transaction = db.transaction(["BudgetStore"], "readwrite");
+          BudgetStore = transaction.objectStore("BudgetStore");
           BudgetStore.clear();
         });
     }
   };
 }
 
-// listen for app coming back online
 window.addEventListener("online", checkDatabase);
